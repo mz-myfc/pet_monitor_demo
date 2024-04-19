@@ -197,7 +197,7 @@ class Helper extends ChangeNotifier {
 
   //Oxygen saturation waveform data
   void _spo2Wave(List<num> array) {
-    if (kDebugMode) print('SPO2 = $array');
+    if (kDebugMode) print('SpO₂ = $array');
   }
 
   //Heart rate and respiration rate
@@ -303,7 +303,7 @@ class Helper extends ChangeNotifier {
 
   //Peak oxygen saturation
   void _spo2Peak(List<num> array) {
-    if (kDebugMode) print('SPO2 peak = $array');
+    if (kDebugMode) print('SpO₂ peak = $array');
   }
 
   //Notification refresh

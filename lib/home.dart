@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
                   Flex(
                     direction: Axis.horizontal,
                     children: [
-                      MyBox(title: 'SPO2', value: helper.spo2.intVal, unit: '%'),
+                      MyBox(title: 'SpO₂', value: helper.spo2.intVal, unit: '%'),
                     ],
                   ),
                   Flex(
