@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
+import 'parse/data_parse.dart';
+
 /*
  * @description Helper
  * @author zl
@@ -13,7 +15,6 @@ class Helper extends ChangeNotifier {
 
   Helper._();
 
-  List<int> bufferArray = [];
   int hr = 0; //Heart Rate
   int sys = 0; //Systolic Blood Pressure
   int dia = 0; //Diastolic Blood Pressure
@@ -32,7 +33,7 @@ class Helper extends ChangeNotifier {
   Timer? timer;
 
   void init() {
-    bufferArray = [];
+    DataParse.instance.init();
     hr = 0;
     sys = 0;
     dia = 0;
@@ -49,62 +50,9 @@ class Helper extends ChangeNotifier {
     refresh();
   }
 
-  void analysis(List<int> array) {
-    bufferArray += array;
-    var i = 0; //Current index
-    var validIndex = 0; //Valid indexes
-    var maxIndex = bufferArray.length - 7; //Leave at least enough room for a minimum set of data
-    while (i <= maxIndex) {
-      //Failed to match the headers
-      if (bufferArray[i] != 0x55 || bufferArray[i + 1] != 0xAA) {
-        i += 1;
-        validIndex = i;
-        continue;
-      }
-      var length = bufferArray[i + 2]; //The data header is successfully matched
-      var type = bufferArray[i + 3]; //Packet type
-      var dataCount = length - 3; //The amount of valid data
-      var packageLength = length + 2; //Package length
-
-      //If no valid data is obtained, skip 2 to avoid missing valid data
-      if (dataCount <= 0) {
-        i += 2;
-        validIndex = i;
-        continue;
-      }
-      //If the remaining data length is less than the data length of the current group, you do not need to process it in this cycle
-      if (i + packageLength > bufferArray.length) {
-        validIndex = i;
-        break;
-      }
-      var checkSum = bufferArray[i + 4 + dataCount] & 0xFF; //The packet check digit, which is taken after 8 digits
-      var sum = 0;
-      List<num> array = [];
-      for (int index = 0; index < dataCount; index++) {
-        var value = bufferArray[i + 4 + index];
-        sum += value;
-        array.add(value);
-      }
-      //Check whether the data is incorrect
-      var realSum = (~(length + type + sum)) & 0xFF; //The decimal values are added to the inverse digits, and the last 8 digits are taken
-      if (checkSum != realSum) {
-        i += 2; //If no valid data is obtained, skip 2 to avoid missing valid data
-        validIndex = i;
-        continue;
-      }
-      //The verification is successful
-      _readData(type, array);
-
-      i += packageLength; //Get valid data, skip one set of data, and detect the next set of data
-      validIndex = i;
-      continue;
-    }
-    //The array before the valid index belongs to the scanned and is not needed, and it is directly emptied
-    bufferArray = bufferArray.sublist(validIndex); //Reorganize the cache array, delete all the data before the valid index
-  }
 
   //Read the data
-  void _readData(int type, List<num> array) {
+  void readData(int type, List<num> array) {
     switch (type) {
       case 0x01:
         _ecgWave(array);
