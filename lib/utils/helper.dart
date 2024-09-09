@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:sprintf/sprintf.dart';
 
 /*
  * @description Helper
@@ -171,22 +170,19 @@ class Helper extends ChangeNotifier {
           .sublist(2, 8)
           .map((e) => e.toRadixString(16).padLeft(2, '0').toUpperCase())
           .toList();
-      return sprintf('%s:%s:%s:%s:%s:%s', mac).toString();
+      return mac.toParts;
     }
     return device.id.startsWith('00:A0:50') ? device.id : '--';
   }
 
   //Handles characters that are not recognized by Bluetooth names
   String _setBleName(String name) {
-    try {
-      if (name.codeUnits.contains(0)) {
-        return String.fromCharCodes(Uint8List.fromList(
-            name.codeUnits.sublist(0, name.codeUnits.indexOf(0))));
-      } else {
-        return name;
-      }
-    } catch (_) {}
-    return '--';
+    if (name.codeUnits.contains(0)) {
+      return String.fromCharCodes(
+        Uint8List.fromList(name.codeUnits.sublist(0, name.codeUnits.indexOf(0))),
+      );
+    }
+    return name;
   }
 
 
@@ -312,7 +308,15 @@ class Helper extends ChangeNotifier {
 
 extension Format on num {
   String get intVal => this > 0 ? '$this' : '--';
+
   String get asFixed => this > 0 ? toStringAsFixed(1) : '--';
-  double get toDou1 => this > 0 ? double.parse(toStringAsFixed(1)) :  0.0;
-  String get batt => this > 0 ? '$this%' : '--';
+
+  double get toDou1 => this > 0 ? double.parse(toStringAsFixed(1)) : 0.0;
+
+  String get battery => this > 0 ? '$this%' : '--';
+}
+
+extension MyListFormat on List {
+  String get toParts =>
+      isNotEmpty ? map((e) => e.toString().padLeft(2, '0')).join(':') : '';
 }

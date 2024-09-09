@@ -60,8 +60,7 @@ extension BluetoothExtension on Ble {
           ]
         },
         connectionTimeout: const Duration(seconds: 2))
-        .listen(
-          (connectionState) => _listener(connectionState, device),
+        .listen((state) => _listener(state, device),
       onError: (_) => _disconnect(),
     );
   }
